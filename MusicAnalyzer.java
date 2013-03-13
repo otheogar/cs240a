@@ -38,7 +38,7 @@ public class MusicAnalyzer extends Configured implements Tool{
 		//job1.setCombinerClass(Reduce.class);
 		//job1.setReducerClass(Reduce.class);
 		job1.setOutputKeyClass(IntWritable.class);
-		job1.setOutputValueClass(IdRatingsArrayWritable.class);
+		job1.setOutputValueClass(IntWritable.class);
 		//job1.setNumReduceTasks(3);
 		FileInputFormat.addInputPath(job1, new Path(args[0]));
 		FileOutputFormat.setOutputPath(job1, new Path(args[1]));
