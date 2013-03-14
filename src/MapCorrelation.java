@@ -46,7 +46,7 @@ public class MapCorrelation extends Mapper<LongWritable, Text, Text, DoubleWrita
                                                 sum += rating;
                                 }
                                 int n = items.size();
-                                double avg = (double)sum/n;
+                                double avg = (double)(sum)/(double)(n);
                                 
                                 for (Entry<Integer,Integer> entry_i : items.entrySet()) {
                                                 for (Entry<Integer,Integer> entry_j : items.entrySet()) {

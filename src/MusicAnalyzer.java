@@ -3,7 +3,8 @@
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
@@ -30,12 +31,12 @@ public class MusicAnalyzer extends Configured implements Tool{
 		
 		Job job1 = new Job(conf1, "analyze music file");
 		job1.setJarByClass(MusicAnalyzer.class);
-		job1.setMapperClass(Map.class);
+		job1.setMapperClass(MapperCombined.class);
 		
 		//job1.setCombinerClass(Reduce.class);
-		//job1.setReducerClass(Reduce.class);
-		job1.setOutputKeyClass(IntWritable.class);
-		job1.setOutputValueClass(IntWritable.class);
+		job1.setReducerClass(Reduce.class);
+		job1.setOutputKeyClass(Text.class);
+		job1.setOutputValueClass(DoubleWritable.class);
 		//job1.setNumReduceTasks(3);
 		FileInputFormat.addInputPath(job1, new Path(args[0]));
 		FileOutputFormat.setOutputPath(job1, new Path(args[1]));
