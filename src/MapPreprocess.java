@@ -61,12 +61,8 @@ public class MapPreprocess extends Mapper<LongWritable, Text, IntWritable, Text>
                                                                 context.write(uid,val);         
                                                                 
                                                 }
-                                                                
                                                                                
-                                                                
-                                                
                                 }
-			
 		}
 }
 
