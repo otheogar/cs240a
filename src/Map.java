@@ -23,12 +23,16 @@ public class Map extends Mapper<LongWritable, Text, IntWritable, IntWritable > {
         @Override
 		public void map(LongWritable key, Text value, Context context) 
 			throws IOException, InterruptedException {
-                                
+               
         	String line = value.toString();
-        	   //System.out.println(line);
+            
+            
             String[] keyval = line.split("\\t");
-            System.out.println(keyval[0]);
-            //uid.set(Integer.parseInt(entries[0]));//don't need the uid 
+            
+            //uid.set(Integer.parseInt(entries[0]));//don't need the uid
+            if(keyval.length != 2){
+                            return;
+            }
             String[] entries = keyval[1].split(";"); //items
             //create new hash to hold this user's ratings
             HashMap<Integer,Integer> items = new HashMap<Integer,Integer>();
@@ -42,15 +46,21 @@ public class Map extends Mapper<LongWritable, Text, IntWritable, IntWritable > {
             }
             int n = items.size();
             int avg = sum/n;
-            IdAdjustedRating[] items_adj = new IdAdjustedRating[n];
+            
             Iterator<Entry<Integer,Integer>> it = items.entrySet().iterator();
             
             while (it.hasNext()) {
                             Entry<Integer,Integer> en = it.next();
                             id.set(en.getKey());
-                            adj_rating.set(en.getValue()/avg);
-                            context.write(id,adj_rating);                
-            }
+                            int adjrating = en.getValue()-avg;
+                            int adjrating_squared = adjrating * adjrating;
+                            adj_rating.set(adjrating_squared);
+                            context.write(id,adj_rating);
+            }                
+            
+            
+        	
+        	
                              
 			
 		}
