@@ -22,6 +22,7 @@ public class MusicAnalyzerPreprocess extends Configured implements Tool{
 		
 	}
 
+	// Only run once
 	public int run(String[] args) throws Exception {
 		
 		

@@ -19,7 +19,7 @@ public class MapPreprocess extends Mapper<LongWritable, Text, IntWritable, Text>
                 private StringBuffer items = new StringBuffer();
 		
                 
-		
+		// Only run once
         @Override
 		public void map(LongWritable key, Text value, Context context) 
 			throws IOException, InterruptedException {

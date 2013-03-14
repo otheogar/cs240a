@@ -1,32 +1,28 @@
 
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.*;
-import org.apache.hadoop.mapreduce.*;
-import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-//import UIdAdjustedRating
-
 import java.io.IOException;
-import java.util.regex.*;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
+import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Mapper;
+//import UIdAdjustedRating
 
 
-public class Map extends Mapper<LongWritable, Text, IntWritable, IntWritable > {
+
+public class Map extends Mapper<LongWritable, Text, IntWritable, DoubleWritable > {
 		private IntWritable id = new IntWritable();
-        private IntWritable adj_rating = new IntWritable();
+    private DoubleWritable adjRatingWritable = new DoubleWritable();
 		
         @Override
 		public void map(LongWritable key, Text value, Context context) 
 			throws IOException, InterruptedException {
                
-        	String line = value.toString();
-            
-            
+        	  String line = value.toString();
             String[] keyval = line.split("\\t");
             
             //uid.set(Integer.parseInt(entries[0]));//don't need the uid
@@ -45,24 +41,19 @@ public class Map extends Mapper<LongWritable, Text, IntWritable, IntWritable > {
                             sum += rating;
             }
             int n = items.size();
-            int avg = sum/n;
+            Double avg = (double)sum/(double)n;
             
             Iterator<Entry<Integer,Integer>> it = items.entrySet().iterator();
             
             while (it.hasNext()) {
                             Entry<Integer,Integer> en = it.next();
                             id.set(en.getKey());
-                            int adjrating = en.getValue()-avg;
-                            int adjrating_squared = adjrating * adjrating;
-                            adj_rating.set(adjrating_squared);
-                            context.write(id,adj_rating);
-            }                
-            
-            
-        	
-        	
-                             
-			
+                            Double adjRating = en.getValue()-avg;
+                            Double adjratingSquared = adjRating * adjRating;
+                            adjRatingWritable.set(adjratingSquared);
+                            // item_id, adjusted rating for it
+                            context.write(id,adjRatingWritable);
+            }                                         
 		}
 }
 
