@@ -16,10 +16,10 @@ import java.util.Map.Entry;
 
 
 
-public class Map extends Mapper<LongWritable, Text, IntWritable, DoubleWritable > {
+public class MapCorrelation extends Mapper<LongWritable, Text, Text, DoubleWritable > {
 		
-                private IntWritable id = new IntWritable();
-                private DoubleWritable adj_rating = new DoubleWritable();
+                private Text idpair = new Text();
+                private DoubleWritable corr = new DoubleWritable();
 		
         @Override
 		public void map(LongWritable key, Text value, Context context) 
@@ -48,20 +48,19 @@ public class Map extends Mapper<LongWritable, Text, IntWritable, DoubleWritable 
                                 int n = items.size();
                                 double avg = (double)sum/n;
                                 
-                                Iterator<Entry<Integer,Integer>> it = items.entrySet().iterator();
-                                
-                                while (it.hasNext()) {
-                                                Entry<Integer,Integer> en = it.next();
-                                                id.set(en.getKey());
-                                                double adjrating = en.getValue()-avg;
-                                                double adjrating_squared = adjrating * adjrating;
-                                                adj_rating.set(adjrating_squared);
-                                                context.write(id,adj_rating);
-                                }                
-                                
-                                
-                                
-			
+                                for (Entry<Integer,Integer>> entry_i : items.entrySet()) {
+                                                for (Entry<Integer,Integer>> entry_j : items.entrySet()) {
+                                                                int key_i = entry_i.getKey();
+                                                                int key_j = entry_j.getKey();
+                                                                if(key_i < key_j) {
+                                                                                //to use symmetry and avoid double counting
+                                                                                idpair.set(""+key_i+","+key_j);
+                                                                                corr.set((entry_i.getValue()-avg)*(entry_j.getValue()-avg));
+                                                                                context.write(idpair,corr);
+                                                                }
+                                                }
+                                }
+	
 		}
 }
 
