@@ -48,8 +48,8 @@ public class MapCorrelation extends Mapper<LongWritable, Text, Text, DoubleWrita
                                 int n = items.size();
                                 double avg = (double)sum/n;
                                 
-                                for (Entry<Integer,Integer>> entry_i : items.entrySet()) {
-                                                for (Entry<Integer,Integer>> entry_j : items.entrySet()) {
+                                for (Entry<Integer,Integer> entry_i : items.entrySet()) {
+                                                for (Entry<Integer,Integer> entry_j : items.entrySet()) {
                                                                 int key_i = entry_i.getKey();
                                                                 int key_j = entry_j.getKey();
                                                                 if(key_i < key_j) {
