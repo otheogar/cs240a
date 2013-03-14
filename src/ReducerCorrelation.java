@@ -48,18 +48,24 @@ public class ReducerCorrelation extends Reducer<Text, DoubleWritable, Text, Doub
       throws IOException, InterruptedException {
    
     // Assuming rootSquaredAdjustedMap is populated
-    // calculating similarity then
+    // calculating similarity of a pair of items then
     for (Entry<Integer,Double> itemEntryI : rootSquaredAdjustedMap.entrySet()) {
       for (Entry<Integer,Double> itemEntryJ : rootSquaredAdjustedMap.entrySet()) {
-       String combinedKey = itemEntryI.getKey()+","+itemEntryJ.getKey();
-       Double numerator= 
-           adjustedSumsMap.get(combinedKey);
-       Double denominator = rootSquaredAdjustedMap.get(itemEntryI.getKey())*
-           rootSquaredAdjustedMap.get(itemEntryJ.getKey());
-       Double similarity = numerator / denominator;
-       combinedKeyText.set(combinedKey);
-       similarityWritable.set(similarity);
-       context.write(combinedKeyText, similarityWritable);
+        // for preventing duplication for the pair of keys 
+        // as the relation is symmetric
+        if(itemEntryI.getKey() < itemEntryJ.getKey()){
+          String combinedKey = itemEntryI.getKey()+","+itemEntryJ.getKey();
+          Double numerator= 
+              adjustedSumsMap.get(combinedKey);
+          Double denominator = rootSquaredAdjustedMap.get(itemEntryI.getKey())*
+              rootSquaredAdjustedMap.get(itemEntryJ.getKey());
+          Double similarity = numerator / denominator;
+          combinedKeyText.set(combinedKey);
+          similarityWritable.set(similarity);
+          // Final output is 
+          // (item1, item2) -> similarity(item1, item2)
+          context.write(combinedKeyText, similarityWritable); 
+        }
       }
     }
     
