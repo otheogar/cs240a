@@ -44,7 +44,7 @@ public class Map extends Mapper<LongWritable, Text, IntWritable, DoubleWritable 
                                                 sum += rating;
                                 }
                                 int n = items.size();
-                                double avg = (double)sum/n;
+                                double avg = (double)(sum)/(double)(n);
                                 
                                 Iterator<Entry<Integer,Integer>> it = items.entrySet().iterator();
                                 
@@ -55,10 +55,7 @@ public class Map extends Mapper<LongWritable, Text, IntWritable, DoubleWritable 
                                                 double adjrating_squared = adjrating * adjrating;
                                                 adj_rating.set(adjrating_squared);
                                                 context.write(id,adj_rating);
-                                }                
-                                
-                                
-                                
+                                }                                          
 
     }
 }
