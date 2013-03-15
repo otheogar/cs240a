@@ -16,8 +16,8 @@ public class ReducerCombined extends Reducer<Text, DoubleWritable, Text, DoubleW
   
   private HashMap<String, Double> similarityMap = new HashMap<String, Double>();
   // This is populate with UserId and the corresponding items id
-  private HashMap<Integer, Double> userItems = new HashMap<Integer, Double>();
-  private Integer K = 100; // for now
+  private HashMap<Integer, String> userItems = new HashMap<Integer, String>();
+  private Integer TOPK = 100; // for now for each user recommend 100 items
   
   private HashMap<Integer, TreeSet<TopKRecord>> recommendedItemBucket = new HashMap<Integer, 
       TreeSet<TopKRecord>>();
@@ -75,7 +75,9 @@ public class ReducerCombined extends Reducer<Text, DoubleWritable, Text, DoubleW
       for (Entry<Integer,Double> itemEntryJ : rootSquaredAdjustedMap.entrySet()) {
         // for preventing duplication for the pair of keys 
         // as the relation is symmetric
-        if(itemEntryI.getKey() < itemEntryJ.getKey()){
+        // removing the condition to prevent duplicates 
+        // as we need it in logic of recommnedation
+        //if(itemEntryI.getKey() < itemEntryJ.getKey()){
           String combinedKey = itemEntryI.getKey()+","+itemEntryJ.getKey();
           Double numerator= 
               adjustedSumsMap.get(combinedKey);
@@ -89,7 +91,7 @@ public class ReducerCombined extends Reducer<Text, DoubleWritable, Text, DoubleW
           context.write(combinedKeyText, similarityWritable); 
           similarityMap.put(combinedKey, similarity);
           
-        }
+        //}
       }
     }
     calculateRecommendedItems(similarityMap);
@@ -100,19 +102,31 @@ public class ReducerCombined extends Reducer<Text, DoubleWritable, Text, DoubleW
     
     // userItems can be populated and put in the Distributed Hash from the 
     // Mappers
-    for(Integer itemId: userItems.keySet()){
+    // Assumed format is key : userId value : itemId,rating 
+    for(Integer userId: userItems.keySet()){
       //look for this itemId in similarity Map
-      for(String similarityPair :similarityMap.keySet()){
-        if(similarityPair.startsWith(itemId+"")){
+      TopKRecord k = null;
+      for(String similarityPair :similarityMap.keySet()){    
+        Double normalizedSimilarity = 0.0, summarlizedSimilarity = 0.0;
+        //Assumed format is key : userId value : itemId,rating 
+        String similiarItem = similarityPair.split(DELIMITER)[0];
+        if(similarityPair.startsWith(userItems.get(userId)+"")){
           // then get the second itemId
-          String similiarItem = similarityPair.split(DELIMITER)[1];
-          Double similarity = similarityMap.get(similarityPair);
-          TopKRecord k = new TopKRecord(itemId, similarity);
-          this.recommendedItemBucket.get(itemId).add(k);
-          if(this.recommendedItemBucket.size() >= K){
-            this.recommendedItemBucket.get(itemId).pollFirst();
-          }
           
+          normalizedSimilarity += similarityMap.get(similarityPair)
+              * Double.parseDouble(userItems.get(userId).split(DELIMITER)[1]);
+          summarlizedSimilarity += similarityMap.get(similarityPair);
+          
+         
+        }
+        normalizedSimilarity /= summarlizedSimilarity;
+        k = new TopKRecord(Integer.parseInt(similiarItem),
+            normalizedSimilarity);
+        this.recommendedItemBucket.get(userId).add(k);
+        // Currently we are not testing whether the items we are recommending 
+        // are already present in his list of elements
+        if(this.recommendedItemBucket.size() >= TOPK){
+          this.recommendedItemBucket.get(userId).pollFirst();
         }
       }
     }
