@@ -1,4 +1,4 @@
-
+package srcSeparated;
 
 import org.apache.hadoop.util.*;
 import org.apache.hadoop.conf.*;
@@ -66,7 +66,7 @@ public class MusicAnalyzer extends Configured implements Tool{
 		FileInputFormat.addInputPath(job2, new Path(args[0]));
 		FileOutputFormat.setOutputPath(job2, new Path(args[1]+"/corr"));
 		
-		return (job2.waitForCompletion(true)) ? 0 : 1);		
+		return (job2.waitForCompletion(true)) ? 0 : 1;		
 		
 		
 		
