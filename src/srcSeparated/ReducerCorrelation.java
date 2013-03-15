@@ -1,4 +1,3 @@
-package srcSeparated;
 import java.io.IOException;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -8,32 +7,35 @@ import java.io.InputStreamReader;
 import java.io.FileInputStream;
 import java.util.*;
 import java.util.Map.Entry;
+import java.net.URI;
 
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.Reducer.Context;
 
-public class ReducerCorrelation extends Reducer<Text, DoubleWritable, Text, DoubleWritable> {
+public class ReducerCorrelation extends Reducer<Text, DoubleWritable, IntWritable, TopKRecord> {
   
   private HashMap<Integer, Double> rootSquaredAdjustedMap = new HashMap<Integer, Double>();
   
-  private DoubleWritable similarityWritable = new DoubleWritable();
-  private Text combinedKeyText = new Text();
-  
+  private TopKRecord similarityRecord = new TopKRecord();
+  private IntWritable idiWritable = new IntWritable(0);
+  private IntWritable idjWritable = new IntWritable(0);
   
   
   @Override
     protected void setup(Context context)
         throws IOException, InterruptedException {
         
+        /*
         Path[] localPaths = DistributedCache.getLocalCacheFiles(context.getConfiguration());
-        if (localPaths.length == 0) {
+        if (localPaths !=null || localPaths.length == 0) {
           throw new FileNotFoundException("Distributed cache file not found.");
         }
         BufferedReader in = null;
@@ -52,8 +54,26 @@ public class ReducerCorrelation extends Reducer<Text, DoubleWritable, Text, Doub
           } finally {
               IOUtils.closeStream(in);
             }
+        }*/
+        URI[] files = DistributedCache.getCacheFiles(context.getConfiguration());
+        for(URI f: files) {
+          System.out.println(f.toString());
         }
-      
+        BufferedReader in = null;
+        //File localFile = new File(localPath.toString());
+          try {
+            in = new BufferedReader(new InputStreamReader(new FileInputStream("myfile0")));
+            String line;
+            String[] entries;
+            while ((line = in.readLine()) != null) {
+              entries = line.split("\\t");
+              if (entries.length == 2) {
+                rootSquaredAdjustedMap.put(Integer.parseInt(entries[0]),Double.parseDouble(entries[1]));
+              }
+            }
+          } finally {
+              IOUtils.closeStream(in);
+            }
       
     }
   
@@ -66,8 +86,10 @@ public class ReducerCorrelation extends Reducer<Text, DoubleWritable, Text, Doub
     
     //get the ids as string then parse as integers and get the norms for each id from the map 
     String[] items = itemIds.toString().split(",");
-    Double norm_i =  rootSquaredAdjustedMap.get(Integer.parseInt(items[0]));
-    Double norm_j =  rootSquaredAdjustedMap.get(Integer.parseInt(items[1]));
+    Integer id_i = Integer.parseInt(items[0]);
+    Integer id_j = Integer.parseInt(items[1]);
+    Double norm_i =  rootSquaredAdjustedMap.get(id_i);
+    Double norm_j =  rootSquaredAdjustedMap.get(id_j);
     
     for(DoubleWritable adjustedRating : adjustedRatings){
       // Sum the correlations
@@ -75,10 +97,19 @@ public class ReducerCorrelation extends Reducer<Text, DoubleWritable, Text, Doub
     }
     
     Double similarity = adjustedSum /(norm_i * norm_j);
-    // (item_ids, adjustedSumWritable) for that id
-    // item_ids will again be like (item_id1, item_id2)
-    similarityWritable.set(similarity);
-    context.write(itemIds, similarityWritable); 
+    
+    
+    idiWritable.set(id_i);
+    idjWritable.set(id_j);
+    similarityRecord.similarityMeasure = similarity;
+    
+    //output (id_i,(id_j,similarity(i,j)))
+    similarityRecord.itemId = id_j;
+    context.write(idiWritable, similarityRecord);
+    
+    //output (id_j,(id_i,similarity(i,j)))
+    similarityRecord.itemId = id_i;
+    context.write(idjWritable, similarityRecord); 
   }
   
 

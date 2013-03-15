@@ -1,4 +1,4 @@
-package srcSeparated;
+
 
 import org.apache.hadoop.util.*;
 import org.apache.hadoop.conf.*;
@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.regex.*;
 import java.util.*;
 import java.io.*;
+import java.net.URI;
 
 
 public class MusicAnalyzer extends Configured implements Tool{
@@ -47,14 +48,23 @@ public class MusicAnalyzer extends Configured implements Tool{
 			return 1;
 		}
 		
-		Configuration conf2 = new Configuration();
-		FileSystem fs = FileSystem.get(conf2);
+		FileSystem fs = FileSystem.get(conf1);
+		Job job2 = new Job(new Configuration(), "analyze music file2");
+		Configuration conf2 = job2.getConfiguration();
+		DistributedCache.createSymlink(conf2);
+		
 		FileStatus[] fsStatus = fs.globStatus(new Path(cachePath+"/part*"));
+		int i=0;
 		for (FileStatus f: fsStatus) {
-			DistributedCache.addCacheFile(f.getPath().toUri(),conf2);
+			Path fp = f.getPath();
+			System.out.println("cache file: " + fp.toString());
+			String symlink = fp.toUri().toString() + "#myfile"+i;
+			System.out.println("cache file symlink: " + symlink);
+			DistributedCache.addCacheFile(new URI(symlink),conf2);
+			i++;
 		}
 		
-		Job job2 = new Job(conf1, "analyze music file2");
+		
 		job2.setJarByClass(MusicAnalyzer.class);
 		job2.setMapperClass(MapCorrelation.class);
 		
