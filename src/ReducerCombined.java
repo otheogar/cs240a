@@ -1,11 +1,11 @@
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.TreeSet;
 
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.hadoop.mapreduce.Reducer.Context;
 
 
 public class ReducerCombined extends Reducer<Text, DoubleWritable, Text, DoubleWritable> {
@@ -13,6 +13,14 @@ public class ReducerCombined extends Reducer<Text, DoubleWritable, Text, DoubleW
   private static String DELIMITER = ",";
   private HashMap<Integer, Double> rootSquaredAdjustedMap = new HashMap<Integer, Double>();
   private HashMap<String, Double> adjustedSumsMap = new HashMap<String, Double>();
+  
+  private HashMap<String, Double> similarityMap = new HashMap<String, Double>();
+  // This is populate with UserId and the corresponding items id
+  private HashMap<Integer, Double> userItems = new HashMap<Integer, Double>();
+  private Integer K = 100; // for now
+  
+  private HashMap<Integer, TreeSet<TopKRecord>> recommendedItemBucket = new HashMap<Integer, 
+      TreeSet<TopKRecord>>();
   
   private DoubleWritable similarityWritable = new DoubleWritable();
   private Text combinedKeyText = new Text();
@@ -79,10 +87,35 @@ public class ReducerCombined extends Reducer<Text, DoubleWritable, Text, DoubleW
           // Final output is 
           // (item1, item2) -> similarity(item1, item2)
           context.write(combinedKeyText, similarityWritable); 
+          similarityMap.put(combinedKey, similarity);
+          
         }
       }
     }
+    calculateRecommendedItems(similarityMap);
+  }
+  
+  private void calculateRecommendedItems(HashMap<String, Double> 
+     similarityMap){
     
+    // userItems can be populated and put in the Distributed Hash from the 
+    // Mappers
+    for(Integer itemId: userItems.keySet()){
+      //look for this itemId in similarity Map
+      for(String similarityPair :similarityMap.keySet()){
+        if(similarityPair.startsWith(itemId+"")){
+          // then get the second itemId
+          String similiarItem = similarityPair.split(DELIMITER)[1];
+          Double similarity = similarityMap.get(similarityPair);
+          TopKRecord k = new TopKRecord(itemId, similarity);
+          this.recommendedItemBucket.get(itemId).add(k);
+          if(this.recommendedItemBucket.size() >= K){
+            this.recommendedItemBucket.get(itemId).pollFirst();
+          }
+          
+        }
+      }
+    }
   }
 
 }
