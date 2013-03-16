@@ -32,7 +32,7 @@ public class MusicAnalyzer extends Configured implements Tool{
 			System.exit(2);
 		}
 		
-		Job job1 = new Job(conf1, "analyze music file");
+		Job job1 = new Job(conf1, "calculate norms");
 		job1.setJarByClass(MusicAnalyzer.class);
 		job1.setMapperClass(Map.class);
 		
@@ -49,7 +49,7 @@ public class MusicAnalyzer extends Configured implements Tool{
 		}
 		
 		FileSystem fs = FileSystem.get(conf1);
-		Job job2 = new Job(new Configuration(), "analyze music file2");
+		Job job2 = new Job(new Configuration(), "calculate simmilarity measure");
 		Configuration conf2 = job2.getConfiguration();
 		DistributedCache.createSymlink(conf2);
 		
@@ -76,7 +76,19 @@ public class MusicAnalyzer extends Configured implements Tool{
 		FileInputFormat.addInputPath(job2, new Path(args[0]));
 		FileOutputFormat.setOutputPath(job2, new Path(args[1]+"/corr"));
 		
-		return (job2.waitForCompletion(true)) ? 0 : 1;		
+		Job job3 = new Job(new Configuration(), "find top k similar items");
+		job3.setJarByClass(MusicAnalyzer.class);
+		job3.setMapperClass(MapIdentity.class);
+		
+		//job2.setCombinerClass(Reduce.class);
+		job3.setReducerClass(ReducerTopK.class);
+		job3.setOutputKeyClass(IntWritable.class);
+		job3.setOutputValueClass(TopKRecord.class);
+		//job2.setNumReduceTasks(3);
+		FileInputFormat.addInputPath(job3, new Path(args[1]+"/corr"));
+		FileOutputFormat.setOutputPath(job3, new Path(args[1]+"/topk"));
+		
+		return ((job2.waitForCompletion(true)) && (job3.waitForCompletion(true)))? 0 : 1;		
 		
 		
 		
