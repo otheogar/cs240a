@@ -24,7 +24,7 @@ public class MusicAnalyzer extends Configured implements Tool{
 	public int run(String[] args) throws Exception {
 		
 		String cachePath = args[1]+"/cache";
-		String cacheInputPath = args[0]+"/cache";
+		String cacheInputPath = args[0];
 		
 		Configuration conf1 = new Configuration();
 		
