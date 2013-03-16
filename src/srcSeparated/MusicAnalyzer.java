@@ -1,4 +1,4 @@
-
+package srcSeparated;
 
 import org.apache.hadoop.util.*;
 import org.apache.hadoop.conf.*;
