@@ -1,12 +1,18 @@
-package srcSeparated;
 
+
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.TreeSet;
 import java.lang.StringBuffer;
+import java.net.URI;
 
+import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.Reducer.Context;
@@ -24,6 +30,39 @@ public class ReducerTopK extends Reducer<IntWritable, TopKRecord, IntWritable, T
   private HashMap<Integer, TreeSet<TopKRecord>> recommendedItemBuckets = new HashMap<Integer, 
       TreeSet<TopKRecord>>();
   private static String DELIMITER = ",";
+  
+  @Override
+  protected void setup(Context context)
+      throws IOException, InterruptedException {
+    URI[] files = DistributedCache.getCacheFiles(context.getConfiguration());
+    String[] symlinks = new String[files.length];
+    int i = 0;
+    String symlink = "";
+    if(files[0].toString().split("\\#").length >= 2){
+      symlink = files[0].toString().split("\\#")[1];
+    }
+    
+    System.out.println(symlink);
+    BufferedReader in = new BufferedReader
+        (new InputStreamReader(new FileInputStream(symlink)));
+    String line;
+    while ((line = in.readLine()) != null) {
+      //System.out.println(line);
+      String[] keyval = line.split("\\t");
+      if (keyval.length == 2) {
+        String userId = keyval[0];
+        String[] entries = keyval[1].split(";"); 
+        ArrayList<String> itemList = new ArrayList<String>();
+        for (String e : entries) {
+          String[] s = e.split(",");
+          itemList.add(s[0]+","+s[1]);
+        }
+        userItems.put(Integer.parseInt(userId), itemList);
+        //System.out.println(Integer.parseInt(userId)+" "+itemList);
+        
+      }
+    }
+  }
   
   @Override
   public void reduce(IntWritable itemId, Iterable<TopKRecord> similarities, Context context)
@@ -45,7 +84,7 @@ public class ReducerTopK extends Reducer<IntWritable, TopKRecord, IntWritable, T
         sb.append(";");
       }
       sb.append(topk.itemId.toString()+","+topk.similarityMeasure.toString());
-      similarityMap.put(itemId+""+topk.itemId.toString(), topk.similarityMeasure);
+      similarityMap.put(itemId+","+topk.itemId.toString(), topk.similarityMeasure);
     }
     
     //topKList.set(sb.toString());
@@ -87,7 +126,12 @@ public class ReducerTopK extends Reducer<IntWritable, TopKRecord, IntWritable, T
      normalizedSimilarity /= summarlizedSimilarity;
      k = new TopKRecord(Integer.parseInt(similiarItem),
          normalizedSimilarity);
+     if(!this.recommendedItemBuckets.containsKey(userId)){
+       this.recommendedItemBuckets.put(userId, new TreeSet<TopKRecord>());  
+     } 
      this.recommendedItemBuckets.get(userId).add(k);
+    
+    
      // Currently we are not testing whether the items we are recommending 
      // are already present in his list of elements
      if(this.recommendedItemBuckets.size() >= TOPK){
