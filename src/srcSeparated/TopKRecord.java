@@ -10,7 +10,7 @@ public class TopKRecord implements Comparable<TopKRecord>,Writable {
   //need a default constructor for Hadoop
   public TopKRecord(){
     this.itemId = -1;
-    this.similarityMeasure = -1.0;
+    this.similarityMeasure = -1.11;
   }
   
   public TopKRecord(Integer itemId, Double similarityMeasure){

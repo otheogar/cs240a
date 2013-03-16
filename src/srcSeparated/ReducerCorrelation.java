@@ -33,37 +33,22 @@ public class ReducerCorrelation extends Reducer<Text, DoubleWritable, IntWritabl
   @Override
     protected void setup(Context context)
         throws IOException, InterruptedException {
-        
-        /*
-        Path[] localPaths = DistributedCache.getLocalCacheFiles(context.getConfiguration());
-        if (localPaths !=null || localPaths.length == 0) {
-          throw new FileNotFoundException("Distributed cache file not found.");
-        }
-        BufferedReader in = null;
-        for (Path localPath : localPaths) {
-          File localFile = new File(localPath.toString());
-          try {
-            in = new BufferedReader(new InputStreamReader(new FileInputStream(localFile)));
-            String line;
-            String[] entries;
-            while ((line = in.readLine()) != null) {
-              entries = line.split("\\t");
-              if (entries.length == 2) {
-                rootSquaredAdjustedMap.put(Integer.parseInt(entries[0]),Double.parseDouble(entries[1]));
-              }
-            }
-          } finally {
-              IOUtils.closeStream(in);
-            }
-        }*/
+
         URI[] files = DistributedCache.getCacheFiles(context.getConfiguration());
+        String[] symlinks = new String[files.length];
+        int i = 0;
         for(URI f: files) {
           System.out.println(f.toString());
+          String[] s = f.toString().split("\\#");
+          if(s.length != 2)
+            throw new FileNotFoundException("no symlink found!!");
+          System.out.println(s[1]);
+          symlinks[i++] = s[1];
         }
         BufferedReader in = null;
-        //File localFile = new File(localPath.toString());
+        for(String symlink : symlinks)
           try {
-            in = new BufferedReader(new InputStreamReader(new FileInputStream("myfile0")));
+            in = new BufferedReader(new InputStreamReader(new FileInputStream(symlink)));
             String line;
             String[] entries;
             while ((line = in.readLine()) != null) {
@@ -96,8 +81,13 @@ public class ReducerCorrelation extends Reducer<Text, DoubleWritable, IntWritabl
       // Sum the correlations
       adjustedSum += adjustedRating.get();
     }
-    
+    //printout for debugging
+    /*
+    System.out.println("adjustedSum: "+ adjustedSum);
+    System.out.println("norm_i: " + norm_i);
+    System.out.println("norm_j: " + norm_j);*/
     Double similarity = adjustedSum /(norm_i * norm_j);
+    //System.out.println("symilarity: " + similarity);
     
     
     idiWritable.set(id_i);
