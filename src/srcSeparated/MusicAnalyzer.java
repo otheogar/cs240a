@@ -1,4 +1,4 @@
-package srcSeparated;
+
 
 import org.apache.hadoop.util.*;
 import org.apache.hadoop.conf.*;
@@ -24,6 +24,7 @@ public class MusicAnalyzer extends Configured implements Tool{
 	public int run(String[] args) throws Exception {
 		
 		String cachePath = args[1]+"/cache";
+		String cacheInputPath = args[0]+"/cache";
 		
 		Configuration conf1 = new Configuration();
 		
@@ -77,6 +78,16 @@ public class MusicAnalyzer extends Configured implements Tool{
 		FileOutputFormat.setOutputPath(job2, new Path(args[1]+"/corr"));
 		
 		Job job3 = new Job(new Configuration(), "find top k similar items");
+		
+		
+		Configuration conf3 = job3.getConfiguration();
+	  DistributedCache.createSymlink(conf3);
+	  FileStatus[] fsUserStatus = fs.globStatus(new Path(cacheInputPath+"/a"));
+	  String userFileSymLink = fsUserStatus[0].getPath().toUri().toString()+"#userFile";
+	  //Path userInfoFilePath = new Path(cacheInputPath+"/a");
+    //String userFileSymLink = userInfoFilePath.toUri().toString()+"#userFile";
+    DistributedCache.addCacheFile(new URI(userFileSymLink),conf3);
+    
 		job3.setJarByClass(MusicAnalyzer.class);
 		job3.setMapperClass(MapIdentity.class);
 		
