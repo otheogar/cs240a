@@ -11,6 +11,7 @@ import java.util.Map.Entry;
 import java.util.TreeSet;
 import java.lang.StringBuffer;
 import java.net.URI;
+import java.lang.Math;
 
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.io.*;
@@ -30,6 +31,7 @@ public class ReducerTopK extends Reducer<IntWritable, TopKRecord, IntWritable, T
   private HashMap<Integer, TreeSet<TopKRecord>> recommendedItemBuckets = new HashMap<Integer, 
       TreeSet<TopKRecord>>();
   private static String DELIMITER = ",";
+  private static Double EPSILON = 0.000000001;
   
   @Override
   protected void setup(Context context)
@@ -118,12 +120,20 @@ public class ReducerTopK extends Reducer<IntWritable, TopKRecord, IntWritable, T
          // then get the second itemId
          normalizedSimilarity += similarityMap.get(similarityPair)
              * Double.parseDouble(items.split(DELIMITER)[1]);
-         summarlizedSimilarity += similarityMap.get(similarityPair);
+         summarlizedSimilarity += Math.abs(similarityMap.get(similarityPair));
         
        }
      }
    
+  
+    //context.write(new IntWritable(Integer.parseInt(similiarItem)),new Text(normalizedSimilarity.toString()));
+    //context.write(new IntWritable(Integer.parseInt(similiarItem)),new Text(summarlizedSimilarity.toString()));
+    //System.out.println("normalizedsimilarity: " + normalizedSimilarity);
+    if(Math.abs(summarlizedSimilarity) < EPSILON)
+      continue;
      normalizedSimilarity /= summarlizedSimilarity;
+     
+     //System.out.println("summarlizedsimilarity: " + summarlizedSimilarity);
      k = new TopKRecord(Integer.parseInt(similiarItem),
          normalizedSimilarity);
      if(!this.recommendedItemBuckets.containsKey(userId)){
