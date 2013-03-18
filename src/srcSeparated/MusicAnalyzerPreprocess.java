@@ -1,4 +1,3 @@
-package srcSeparated;
 import org.apache.hadoop.util.*;
 import org.apache.hadoop.conf.*;
 import org.apache.hadoop.fs.*;
@@ -58,7 +57,7 @@ public class MusicAnalyzerPreprocess extends Configured implements Tool{
 	public static void main(String[] args) throws Exception {
 		
 		
-		int res = ToolRunner.run(new Configuration(), new MusicAnalyzer(), args);
+		int res = ToolRunner.run(new Configuration(), new MusicAnalyzerPreprocess(), args);
 		System.exit(res);
 	}
 

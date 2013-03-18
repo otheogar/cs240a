@@ -1,4 +1,3 @@
-package srcSeparated;
 import java.io.IOException;
 
 import org.apache.hadoop.io.DoubleWritable;
@@ -13,17 +12,17 @@ public class Reduce extends Reducer<IntWritable, DoubleWritable, IntWritable, Do
           throws IOException, InterruptedException {
     
     Double squaredAdjustedSum = 0.0;
-    DoubleWritable rootSquaredAdjustedSum = new DoubleWritable();
+    DoubleWritable squaredAdjustedSumWritable = new DoubleWritable();
     
     for(DoubleWritable squaredAdjustedRating : squaredAdjustedRatings){
       // Sum the adjusted ratings
       squaredAdjustedSum += squaredAdjustedRating.get();
     }
     
-    // Take the square root of the squared sum
-    rootSquaredAdjustedSum.set(Math.sqrt(squaredAdjustedSum));
+   
+    squaredAdjustedSumWritable.set(squaredAdjustedSum);
     // (item_id, rootSquaredAsjustedSum) for that id
-    context.write(itemId, rootSquaredAdjustedSum);
+    context.write(itemId, squaredAdjustedSumWritable);
     
   }
 

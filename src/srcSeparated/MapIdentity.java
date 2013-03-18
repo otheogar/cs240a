@@ -19,7 +19,7 @@ import java.util.Map.Entry;
 public class MapIdentity extends Mapper<LongWritable, Text, IntWritable, TopKRecord> {
   
   
-  private TopKRecord similarityRecord = new TopKRecord();
+  
   private IntWritable idiWritable = new IntWritable(0);
 		
         @Override
@@ -32,8 +32,10 @@ public class MapIdentity extends Mapper<LongWritable, Text, IntWritable, TopKRec
                                 String[] keyval = line.split("\\t");
                                 idiWritable.set(Integer.parseInt(keyval[0]));
                                 String[] s = keyval[1].split(",");
-                                similarityRecord.itemId = Integer.parseInt(s[0].replace("(",""));
-                                similarityRecord.similarityMeasure = Double.parseDouble(s[1].replace(")",""));
+				
+                                Integer itemId = Integer.parseInt(s[0]);
+                                Double similarityMeasure = Double.parseDouble(s[1]);
+				TopKRecord similarityRecord = new TopKRecord(itemId,similarityMeasure);
                                 context.write(idiWritable,similarityRecord);
 			
 		}

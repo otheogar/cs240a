@@ -1,4 +1,3 @@
-package srcSeparated;
 import org.apache.hadoop.io.*;
 
 import java.io.*;

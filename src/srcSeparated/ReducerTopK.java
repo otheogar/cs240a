@@ -19,12 +19,14 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.Reducer.Context;
 
 
+
+
 public class ReducerTopK extends Reducer<IntWritable, TopKRecord, IntWritable, Text> {
   private static Integer TOPK = 30; //find most similar 30 items
-  private TreeSet<TopKRecord> recommendedItemBucket = new TreeSet<TopKRecord>();
+  
   private Text topKList = new Text();
   
-  
+  /*
   private HashMap<String, Double> similarityMap = new HashMap<String, Double>();
   // This is populate with UserId and the corresponding items id
   private HashMap<Integer, ArrayList<String>> userItems = new HashMap<Integer, ArrayList<String>>();
@@ -65,18 +67,34 @@ public class ReducerTopK extends Reducer<IntWritable, TopKRecord, IntWritable, T
       }
     }
   }
+  */
   
   @Override
   public void reduce(IntWritable itemId, Iterable<TopKRecord> similarities, Context context)
           throws IOException, InterruptedException {
     //output the list of pairs itemid,similarity_measure fro the top k most similar items for this item
-     
+    
+    TreeSet<TopKRecord> recommendedItemBucket = new TreeSet<TopKRecord>();
+    int i=0;
     for(TopKRecord k: similarities) {
-      this.recommendedItemBucket.add(k);
+      System.out.println("k.itemId: " + k.itemId + ", k.similarityMeasure: " + k.similarityMeasure);
+      if(recommendedItemBucket.size() > 0){
+        TopKRecord r = recommendedItemBucket.first();
+        /*
+        System.out.println("r.itemId: " + r.itemId + ", r.similarityMeasure: " + r.similarityMeasure);
+        System.out.println("equals: " + k.equals(r));
+        System.out.println("compareTo: " + k.compareTo(r));
+        */
+      }
+      System.out.println(recommendedItemBucket.add(k));
         // Currently we are not testing whether the items we are recommending 
         // are already present in his list of elements
-        if(this.recommendedItemBucket.size() >= TOPK){
-          this.recommendedItemBucket.pollFirst();
+        /*
+        System.out.println("itemId: " + itemId.toString() + " " + ++i + " similarity: " + k.toString());
+        System.out.println("bucket size: " + recommendedItemBucket.size());
+        */
+        if(recommendedItemBucket.size() >= TOPK){
+          recommendedItemBucket.pollFirst();
         } 
      }
      
@@ -86,15 +104,15 @@ public class ReducerTopK extends Reducer<IntWritable, TopKRecord, IntWritable, T
         sb.append(";");
       }
       sb.append(topk.itemId.toString()+","+topk.similarityMeasure.toString());
-      similarityMap.put(itemId+","+topk.itemId.toString(), topk.similarityMeasure);
+      //similarityMap.put(itemId+","+topk.itemId.toString(), topk.similarityMeasure);
     }
     
-    //topKList.set(sb.toString());
-    //context.write(itemId, topKList);
+    topKList.set(sb.toString());
+    context.write(itemId, topKList);
     
   
   }
-  
+/*
   protected void cleanup(Context context)
       throws IOException, InterruptedException {
     calculateRecommendedItems(context, similarityMap);
@@ -124,7 +142,7 @@ public class ReducerTopK extends Reducer<IntWritable, TopKRecord, IntWritable, T
         
        }
      }
-   
+  
   
     //context.write(new IntWritable(Integer.parseInt(similiarItem)),new Text(normalizedSimilarity.toString()));
     //context.write(new IntWritable(Integer.parseInt(similiarItem)),new Text(summarlizedSimilarity.toString()));
@@ -164,5 +182,5 @@ public class ReducerTopK extends Reducer<IntWritable, TopKRecord, IntWritable, T
    
  }
 }
-
+*/
 }

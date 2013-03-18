@@ -1,4 +1,3 @@
-package srcSeparated;
 import org.apache.hadoop.io.*;
 import java.io.*;
 
@@ -34,7 +33,7 @@ public class TopKRecord implements Comparable<TopKRecord>,Writable {
   public int compareTo(TopKRecord arg0) {
     // TODO Auto-generated method stub
     if(this.similarityMeasure == arg0.similarityMeasure){
-      return 0;
+      return this.itemId.compareTo(arg0.itemId);
     }
     return this.similarityMeasure.compareTo(arg0.similarityMeasure);
   }
@@ -50,7 +49,7 @@ public class TopKRecord implements Comparable<TopKRecord>,Writable {
     }
 
     public String toString() {
-        return "("+Integer.toString(itemId) + ", " + Double.toString(similarityMeasure)+")";
+        return ""+Integer.toString(itemId) + ", " + Double.toString(similarityMeasure)+"";
     }
   
 }

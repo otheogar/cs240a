@@ -1,4 +1,3 @@
-package srcSeparated;
 import java.io.IOException;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -23,9 +22,8 @@ import org.apache.hadoop.mapreduce.Reducer.Context;
 
 public class ReducerCorrelation extends Reducer<Text, DoubleWritable, IntWritable, TopKRecord> {
   
-  private HashMap<Integer, Double> rootSquaredAdjustedMap = new HashMap<Integer, Double>();
+  private HashMap<Integer, Double> squaredAdjustedMap = new HashMap<Integer, Double>();
   
-  private TopKRecord similarityRecord = new TopKRecord();
   private IntWritable idiWritable = new IntWritable(0);
   private IntWritable idjWritable = new IntWritable(0);
   
@@ -54,7 +52,7 @@ public class ReducerCorrelation extends Reducer<Text, DoubleWritable, IntWritabl
             while ((line = in.readLine()) != null) {
               entries = line.split("\\t");
               if (entries.length == 2) {
-                rootSquaredAdjustedMap.put(Integer.parseInt(entries[0]),Double.parseDouble(entries[1]));
+                squaredAdjustedMap.put(Integer.parseInt(entries[0]),Double.parseDouble(entries[1]));
               }
             }
           } finally {
@@ -74,8 +72,8 @@ public class ReducerCorrelation extends Reducer<Text, DoubleWritable, IntWritabl
     String[] items = itemIds.toString().split(",");
     Integer id_i = Integer.parseInt(items[0]);
     Integer id_j = Integer.parseInt(items[1]);
-    Double norm_i =  rootSquaredAdjustedMap.get(id_i);
-    Double norm_j =  rootSquaredAdjustedMap.get(id_j);
+    Double norm_i =  Math.sqrt(squaredAdjustedMap.get(id_i));
+    Double norm_j =  Math.sqrt(squaredAdjustedMap.get(id_j));
     
     for(DoubleWritable adjustedRating : adjustedRatings){
       // Sum the correlations
@@ -92,14 +90,13 @@ public class ReducerCorrelation extends Reducer<Text, DoubleWritable, IntWritabl
     
     idiWritable.set(id_i);
     idjWritable.set(id_j);
-    similarityRecord.similarityMeasure = similarity;
     
     //output (id_i,(id_j,similarity(i,j)))
-    similarityRecord.itemId = id_j;
+    TopKRecord similarityRecord = new TopKRecord(id_j,similarity);
     context.write(idiWritable, similarityRecord);
     
     //output (id_j,(id_i,similarity(i,j)))
-    similarityRecord.itemId = id_i;
+    similarityRecord = new TopKRecord(id_i,similarity);
     context.write(idjWritable, similarityRecord); 
   }
   
