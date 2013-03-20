@@ -77,7 +77,7 @@ public class ReducerTopK extends Reducer<IntWritable, TopKRecord, IntWritable, T
     TreeSet<TopKRecord> recommendedItemBucket = new TreeSet<TopKRecord>();
     int i=0;
     for(TopKRecord k: similarities) {
-      System.out.println("k.itemId: " + k.itemId + ", k.similarityMeasure: " + k.similarityMeasure);
+      //System.out.println("k.itemId: " + k.itemId + ", k.similarityMeasure: " + k.similarityMeasure);
       if(recommendedItemBucket.size() > 0){
         TopKRecord r = recommendedItemBucket.first();
         /*
@@ -85,8 +85,9 @@ public class ReducerTopK extends Reducer<IntWritable, TopKRecord, IntWritable, T
         System.out.println("equals: " + k.equals(r));
         System.out.println("compareTo: " + k.compareTo(r));
         */
+        
       }
-      System.out.println(recommendedItemBucket.add(k));
+      recommendedItemBucket.add(new TopKRecord(k.itemId, k.similarityMeasure));
         // Currently we are not testing whether the items we are recommending 
         // are already present in his list of elements
         /*
@@ -112,7 +113,7 @@ public class ReducerTopK extends Reducer<IntWritable, TopKRecord, IntWritable, T
     
   
   }
-/*
+ /*
   protected void cleanup(Context context)
       throws IOException, InterruptedException {
     calculateRecommendedItems(context, similarityMap);
@@ -181,6 +182,6 @@ public class ReducerTopK extends Reducer<IntWritable, TopKRecord, IntWritable, T
    
    
  }
-}
-*/
+}*/
+
 }
