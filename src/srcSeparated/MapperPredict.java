@@ -62,7 +62,7 @@ public class MapperPredict extends Mapper<LongWritable, Text, IntWritable, Text 
 	    }
 	    else if(symlink.contains("Items")) {
 	      Integer itemId = Integer.parseInt(keyval[0]);
-	      System.out.println("itemId: " + itemId);
+	      //System.out.println("itemId: " + itemId);
 	      String[] entries = keyval[1].split(";");
 	      //create a hashmap to hold similar item : similarity measure
 	      HashMap<Integer,Double> neighbors = new HashMap<Integer,Double>();
@@ -114,28 +114,28 @@ public class MapperPredict extends Mapper<LongWritable, Text, IntWritable, Text 
 	  sb.append(";");
 	}
 	//try to predict the rating for this item
-	Double prediction = -1.111; //-1 indicates we couldn't find similar items rated by this user so cannot make a prediction
+	Double prediction = 0.01; //-1 indicates we couldn't find similar items rated by this user so cannot make a prediction
 	Double numerator = 0.0;
 	Double denominator = 0.0;
 	//get the items similar to this item
-	System.out.println("user " + activeUser + " item to predict: " + itemId);
+	//System.out.println("user " + activeUser + " item to predict: " + itemId);
 	HashMap<Integer,Double> similarItems = neighborhoods.get(itemId);
 	//see if it's not null
 	if(similarItems != null) {
-	  System.out.println("got similarity map");
+	  //System.out.println("got similarity map");
 	  for (Entry<Integer,Double> itemSimilarity : similarItems.entrySet()) {
 	  //for each neighbor check to see if this user has rated it
 	  Integer item = itemSimilarity.getKey();
-	  System.out.println("similar item: " + item);
+	  //System.out.println("similar item: " + item);
 	  if(ratedItems.containsKey(item)) {
 	    Double rating = ratedItems.get(item);
-	    System.out.println("rating : " + rating);
+	    //System.out.println("rating : " + rating);
 	    Double similarity = itemSimilarity.getValue();
-	    System.out.println("similarity: " + similarity);
+	    //System.out.println("similarity: " + similarity);
 	    numerator += similarity * rating;
-	    System.out.println("numerator: " + numerator);
+	    //System.out.println("numerator: " + numerator);
 	    denominator += Math.abs(similarity);
-	    System.out.println("denominator " + denominator);
+	    //System.out.println("denominator " + denominator);
 	  }
 	  }
 	  if(denominator != 0.0) {
@@ -143,7 +143,7 @@ public class MapperPredict extends Mapper<LongWritable, Text, IntWritable, Text 
 	  }
 	}
 	
-	System.out.println("prediction: " + prediction);
+	//System.out.println("prediction: " + prediction);
 	//append to the string for output: itemPredicted, prediction, real rating (form test file)
 	sb.append(itemId.toString() + "," + prediction.toString() + "," + h.get(itemId));
       }
