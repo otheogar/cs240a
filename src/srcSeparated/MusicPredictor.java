@@ -23,7 +23,7 @@ public class MusicPredictor extends Configured implements Tool{
 
 	public int run(String[] args) throws Exception {
 		
-		String cachePath = args[1]+"/cache";
+		String cachePath = "cache";
 		//String cacheInputPath = args[0];
 		
 		if (args.length != 2) {
@@ -37,7 +37,7 @@ public class MusicPredictor extends Configured implements Tool{
 		
 		String ratingsString = cachePath+"/testRatings";
 		Path testRatingsFile = new Path(ratingsString);
-		InputStream in = new BufferedInputStream(new FileInputStream("/home/music/testpreprocess.txt"));
+		InputStream in = new BufferedInputStream(new FileInputStream("/home/cs240a-ucsb-34/music/testpreprocess_test.txt"));
 		FileSystem fs = FileSystem.get(URI.create(ratingsString), conf);
 		OutputStream out = fs.create(testRatingsFile, new Progressable() {
 			public void progress() {
@@ -51,7 +51,7 @@ public class MusicPredictor extends Configured implements Tool{
 		
 		String simliarItemsString = cachePath + "/similarItems";
 		Path similarItemsFile = new Path(simliarItemsString);
-		in = new BufferedInputStream(new FileInputStream("/home/music/similarItems.txt"));
+		in = new BufferedInputStream(new FileInputStream("/home/cs240a-ucsb-34/music/similarItems.txt"));
 		fs = FileSystem.get(URI.create(simliarItemsString), conf);
 		out = fs.create(similarItemsFile, new Progressable() {
 			public void progress() {
@@ -60,20 +60,20 @@ public class MusicPredictor extends Configured implements Tool{
 		});    
 		IOUtils.copyBytes(in, out, 4096, true);
 
-		symlink = testRatingsFile.toUri().toString() + "#similarItemsFile";
+		symlink = similarItemsFile.toUri().toString() + "#similarItemsFile";
 		DistributedCache.addCacheFile(new URI(symlink),conf);
 		
 		
 		job1.setJarByClass(MusicAnalyzer.class);
-		job1.setMapperClass(Map.class);
+		job1.setMapperClass(MapperPredict.class);
 		
 		//job1.setCombinerClass(Reduce.class);
-		job1.setReducerClass(Reduce.class);
+		//job1.setReducerClass(Reduce.class);
 		job1.setOutputKeyClass(IntWritable.class);
-		job1.setOutputValueClass(DoubleWritable.class);
+		job1.setOutputValueClass(Text.class);
 		//job1.setNumReduceTasks(3);
 		FileInputFormat.addInputPath(job1, new Path(args[0]));
-		FileOutputFormat.setOutputPath(job1, new Path(cachePath));
+		FileOutputFormat.setOutputPath(job1, new Path(args[1]));
 		
 		return job1.waitForCompletion(true) ? 0 : 1;
 		
