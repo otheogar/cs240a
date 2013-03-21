@@ -69,7 +69,7 @@ public class MusicAnalyzer extends Configured implements Tool{
 		job2.setJarByClass(MusicAnalyzer.class);
 		job2.setMapperClass(MapCorrelation.class);
 		
-		//job2.setCombinerClass(Reduce.class);
+		job2.setCombinerClass(CombinerCorrelation.class);
 		job2.setReducerClass(ReducerCorrelation.class);
 		job2.setOutputKeyClass(Text.class);
 		job2.setOutputValueClass(DoubleWritable.class);
