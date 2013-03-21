@@ -41,7 +41,7 @@ public class MusicAnalyzer extends Configured implements Tool{
 		job1.setReducerClass(Reduce.class);
 		job1.setOutputKeyClass(IntWritable.class);
 		job1.setOutputValueClass(DoubleWritable.class);
-		job1.setNumReduceTasks(4);
+		job1.setNumReduceTasks(8);
 		FileInputFormat.addInputPath(job1, new Path(args[0]));
 		FileOutputFormat.setOutputPath(job1, new Path(cachePath));
 		
@@ -58,9 +58,9 @@ public class MusicAnalyzer extends Configured implements Tool{
 		int i=0;
 		for (FileStatus f: fsStatus) {
 			Path fp = f.getPath();
-			System.out.println("cache file: " + fp.toString());
+			//System.out.println("cache file: " + fp.toString());
 			String symlink = fp.toUri().toString() + "#myfile"+i;
-			System.out.println("cache file symlink: " + symlink);
+			//System.out.println("cache file symlink: " + symlink);
 			DistributedCache.addCacheFile(new URI(symlink),conf2);
 			i++;
 		}
@@ -73,7 +73,7 @@ public class MusicAnalyzer extends Configured implements Tool{
 		job2.setReducerClass(ReducerCorrelation.class);
 		job2.setOutputKeyClass(Text.class);
 		job2.setOutputValueClass(DoubleWritable.class);
-		job2.setNumReduceTasks(4);
+		job2.setNumReduceTasks(8);
 		FileInputFormat.addInputPath(job2, new Path(args[0]));
 		FileOutputFormat.setOutputPath(job2, new Path(args[1]+"/corr"));
 		
@@ -97,7 +97,7 @@ public class MusicAnalyzer extends Configured implements Tool{
 		job3.setReducerClass(ReducerTopK.class);
 		job3.setOutputKeyClass(IntWritable.class);
 		job3.setOutputValueClass(TopKRecord.class);
-		job3.setNumReduceTasks(4);
+		job3.setNumReduceTasks(8);
 		FileInputFormat.addInputPath(job3, new Path(args[1]+"/corr"));
 		FileOutputFormat.setOutputPath(job3, new Path(args[1]+"/topk"));
 		

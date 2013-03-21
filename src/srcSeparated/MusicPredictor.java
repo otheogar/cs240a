@@ -33,6 +33,8 @@ public class MusicPredictor extends Configured implements Tool{
 		
 		Job job1 = new Job(new Configuration(), "predict ratings");
 		Configuration conf = job1.getConfiguration();
+		
+		conf.set("mapred.child.java.opts","-Xms1024m -Xmx1024m");
 		DistributedCache.createSymlink(conf);
 		
 		String ratingsString = cachePath+"/testRatings";
