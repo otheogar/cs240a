@@ -84,7 +84,9 @@ public class ReducerCorrelation extends Reducer<Text, DoubleWritable, IntWritabl
     System.out.println("adjustedSum: "+ adjustedSum);
     System.out.println("norm_i: " + norm_i);
     System.out.println("norm_j: " + norm_j);*/
-    Double similarity = adjustedSum /(norm_i * norm_j);
+    Double similarity = 0.0;
+    if(norm_i > 0.0 && norm_j > 0.0)
+      similarity = adjustedSum /(norm_i * norm_j);
     //System.out.println("symilarity: " + similarity);
     
     
