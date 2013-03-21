@@ -20,6 +20,7 @@ public class TopKRecord implements Comparable<TopKRecord>,Writable {
   @Override
   public boolean equals(Object obj) {
     TopKRecord other = (TopKRecord)obj;
+    //System.out.println(this.itemId+ " "+this.similarityMeasure);
     if(other.similarityMeasure == this.similarityMeasure && 
         other.itemId == this.itemId){
       return true;
@@ -32,7 +33,7 @@ public class TopKRecord implements Comparable<TopKRecord>,Writable {
   @Override
   public int compareTo(TopKRecord arg0) {
     // TODO Auto-generated method stub
-    if(this.similarityMeasure == arg0.similarityMeasure){
+    if(this.similarityMeasure.compareTo(arg0.similarityMeasure)==0){
       return this.itemId.compareTo(arg0.itemId);
     }
     return this.similarityMeasure.compareTo(arg0.similarityMeasure);
