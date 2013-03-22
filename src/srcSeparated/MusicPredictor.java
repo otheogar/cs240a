@@ -39,7 +39,7 @@ public class MusicPredictor extends Configured implements Tool{
 		
 		String ratingsString = cachePath+"/testRatings";
 		Path testRatingsFile = new Path(ratingsString);
-		InputStream in = new BufferedInputStream(new FileInputStream("/home/cs240a-ucsb-34/music/testpreprocess_test.txt"));
+		InputStream in = new BufferedInputStream(new FileInputStream("/home/cs240a-ucsb-33/music/testpreprocess_test.txt"));
 		FileSystem fs = FileSystem.get(URI.create(ratingsString), conf);
 		OutputStream out = fs.create(testRatingsFile, new Progressable() {
 			public void progress() {
@@ -53,7 +53,7 @@ public class MusicPredictor extends Configured implements Tool{
 		
 		String simliarItemsString = cachePath + "/similarItems";
 		Path similarItemsFile = new Path(simliarItemsString);
-		in = new BufferedInputStream(new FileInputStream("/home/cs240a-ucsb-34/music/similarItems.txt"));
+		in = new BufferedInputStream(new FileInputStream("/home/cs240a-ucsb-33/music/similarItems.txt"));
 		fs = FileSystem.get(URI.create(simliarItemsString), conf);
 		out = fs.create(similarItemsFile, new Progressable() {
 			public void progress() {
